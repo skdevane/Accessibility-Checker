@@ -1,0 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Caveat:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Nunito', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #ede9f5;
+  }
+}
+
+@layer utilities {
+  /* Fade-in animation */
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in {
+    animation: fade-in 0.45s ease-out both;
+  }
+
+  /* Gentle float for hero illustration */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-8px); }
+  }
+  .animate-float {
+    animation: float 3.2s ease-in-out infinite;
+  }
+
+  /* Pulse dot */
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+  }
+  .animate-blink {
+    animation: blink 1.4s ease-in-out infinite;
+  }
+
+  /* Dotted background pattern */
+  .dot-bg {
+    background-color: #ede9f5;
+    background-image: radial-gradient(circle, #b9aed8 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  /* Handwritten font helper */
+  .font-hand {
+    font-family: 'Caveat', cursive;
+  }
+
+  /* Dashed underline */
+  .dashed-underline {
+    text-decoration: underline;
+    text-decoration-style: dashed;
+    text-underline-offset: 4px;
+  }
+
+  /* Card shadow */
+  .card-shadow {
+    box-shadow: 4px 6px 0px 0px rgba(130, 100, 190, 0.18);
+  }
+  .card-shadow-sm {
+    box-shadow: 2px 3px 0px 0px rgba(130, 100, 190, 0.14);
+  }
+
+  /* Score ring animation */
+  @keyframes ring-draw {
+    from { stroke-dashoffset: 251; }
+    to   { stroke-dashoffset: var(--offset); }
+  }
+  .ring-animate {
+    animation: ring-draw 1s ease-out forwards;
+  }
+
+  /* Slide down */
+  @keyframes slide-down {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-slide-down {
+    animation: slide-down 0.25s ease-out both;
+  }
+}
