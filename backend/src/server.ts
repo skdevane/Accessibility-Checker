@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import scanRouter from './routes/scan';
 
+process.env.PLAYWRIGHT_BROWSERS_PATH = '0';
+
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
 const CORS_ORIGIN = process.env.CORS_ORIGIN ?? '*';
