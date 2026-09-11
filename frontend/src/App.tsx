@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { ScanForm } from './components/ScanForm';
 import { ScoreCard } from './components/ScoreCard';
 import { IssueGroup } from './components/IssueGroup';
+import { ViolationGroup } from './components/ViolationGroup';
+import { ScanProgress } from './components/ScanProgress';
 import type { ScanResult, Category } from './types';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
@@ -102,17 +104,21 @@ export default function App() {
     }
   }
 
-  // Group issues by category
-  const grouped = result
-    ? CATEGORY_ORDER.reduce<Partial<Record<Category, typeof result.issues>>>(
+  // V1 grouping compatibility
+  const groupedV1 = result?.issues
+    ? CATEGORY_ORDER.reduce<Partial<Record<Category, NonNullable<typeof result.issues>>>>(
         (acc, cat) => {
-          const items = result.issues.filter((i) => i.category === cat);
+          const items = result.issues!.filter((i) => i.category === cat);
           if (items.length > 0) acc[cat] = items;
           return acc;
         },
         {},
       )
     : {};
+
+  const totalViolations = result?.violations
+    ? result.violations.length
+    : result?.issueCount ?? 0;
 
   return (
     <div className="min-h-screen dot-bg">
@@ -124,7 +130,7 @@ export default function App() {
         Skip to main content
       </a>
 
-      <div className="max-w-2xl mx-auto px-4 py-12">
+      <div className="max-w-3xl mx-auto px-4 py-12">
 
         {/* ── Hero Header ── */}
         <header className="mb-10">
@@ -146,12 +152,12 @@ export default function App() {
 
               {/* Subtitle */}
               <p className="font-hand text-lg text-purple-500 mb-3">
-                ~ Audit any site for WCAG 2.1 AA issues ~
+                ~ Audit any site with Playwright & axe-core ~
               </p>
 
               {/* Badge row */}
               <div className="flex gap-2 flex-wrap">
-                {['WCAG 2.1 AA', '15 Rules', 'Instant Scan'].map((tag) => (
+                {['axe-core Engine', 'WCAG 2.1 / 2.2', 'Playwright Scanner'].map((tag) => (
                   <span
                     key={tag}
                     className="text-xs font-bold bg-white border-2 border-purple-200 text-purple-500 px-3 py-1 rounded-full card-shadow-sm"
@@ -171,6 +177,9 @@ export default function App() {
             <ScanForm onScan={handleScan} loading={loading} />
           </div>
 
+          {/* ── Multi-Stage Scanning Progress ── */}
+          {loading && <ScanProgress />}
+
           {/* ── Error ── */}
           {error && <ErrorCard error={error} />}
 
@@ -180,30 +189,41 @@ export default function App() {
               <ScoreCard
                 score={result.score}
                 url={result.url}
+                summary={result.summary}
                 issueCount={result.issueCount}
                 scannedAt={result.scannedAt}
               />
 
-              {result.issueCount === 0 ? (
+              {totalViolations === 0 ? (
                 <div className="bg-white rounded-2xl border-2 border-emerald-300 card-shadow text-center py-12 px-6">
                   <div className="text-5xl mb-3">🎉</div>
                   <p className="font-hand text-2xl text-emerald-600 font-bold">All clear!</p>
-                  <p className="text-purple-400 text-sm mt-1">This page passes all 15 checked rules.</p>
+                  <p className="text-purple-500 text-sm mt-1">
+                    {result.summary
+                      ? `Passed ${result.summary.passed} WCAG rules with 0 violations!`
+                      : 'This page passes all checked accessibility rules.'}
+                  </p>
+                </div>
+              ) : result.violations ? (
+                <div className="bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-purple-200 card-shadow p-6">
+                  <h3 className="font-hand text-xl text-purple-700 font-bold mb-4">
+                    ~ Accessibility Violations ({result.violations.length}) ~
+                  </h3>
+                  <ViolationGroup violations={result.violations} />
                 </div>
               ) : (
                 <div className="space-y-3">
                   <p className="font-hand text-lg text-purple-500 ml-1">
                     ~ Issues by category ~
                   </p>
-                  {CATEGORY_ORDER.filter((cat) => grouped[cat]).map((cat) => (
-                    <IssueGroup key={cat} category={cat} issues={grouped[cat]!} />
+                  {CATEGORY_ORDER.filter((cat) => groupedV1[cat]).map((cat) => (
+                    <IssueGroup key={cat} category={cat} issues={groupedV1[cat]!} />
                   ))}
                 </div>
               )}
             </div>
           )}
         </main>
-
 
       </div>
     </div>

@@ -1,8 +1,7 @@
 import { Router, Request, Response } from 'express';
-import { fetchPage } from '../engine/fetchPage';
-import { runRules } from '../engine/runRules';
-import { calculateScore } from '../engine/scoreCalculator';
-import { ScanResult } from '../types';
+import { scanWithBrowser } from '../engine/scanWithBrowser';
+import { calculateScoreV2 } from '../engine/scoreCalculatorV2';
+import { Impact, ScanResult, ScanSummary, Violation } from '../types';
 
 const router = Router();
 
@@ -24,16 +23,40 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    const html = await fetchPage(url);
-    const issues = runRules(html);
-    const score = calculateScore(issues);
+    const { axeResults } = await scanWithBrowser(url);
+
+    const violations: Violation[] = axeResults.violations.map((v) => ({
+      id: v.id,
+      wcag: v.tags.filter((t) => t.startsWith('wcag')),
+      impact: (v.impact || 'minor') as Impact,
+      description: v.description,
+      help: v.help,
+      helpUrl: v.helpUrl,
+      nodes: v.nodes.map((n) => ({
+        html: n.html,
+        target: n.target.map((t) => (typeof t === 'string' ? t : JSON.stringify(t))),
+        failureSummary: n.failureSummary || '',
+      })),
+    }));
+
+    const summary: ScanSummary = {
+      critical: violations.filter((v) => v.impact === 'critical').length,
+      serious: violations.filter((v) => v.impact === 'serious').length,
+      moderate: violations.filter((v) => v.impact === 'moderate').length,
+      minor: violations.filter((v) => v.impact === 'minor').length,
+      passed: axeResults.passes.length,
+      inapplicable: axeResults.inapplicable.length,
+    };
+
+    const score = calculateScoreV2(summary);
 
     const result: ScanResult = {
       url,
       score,
-      issues,
-      issueCount: issues.length,
+      engine: 'v2',
       scannedAt: new Date().toISOString(),
+      summary,
+      violations,
     };
 
     res.json(result);
@@ -41,13 +64,13 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
     if (err instanceof Error) {
       const msg = err.message;
 
-      const isTimeout    = msg.includes('timeout') || msg.includes('ECONNABORTED') || msg.includes('ETIMEDOUT');
-      const isNotFound   = msg.includes('ENOTFOUND') || msg.includes('EAI_AGAIN');
-      const isRefused    = msg.includes('ECONNREFUSED');
-      const isReset      = msg.includes('ECONNRESET') || msg.includes('EHOSTUNREACH') || msg.includes('ENETUNREACH');
-      const isSsl        = msg.includes('SSL') || msg.includes('certificate') || msg.includes('CERT_');
-      const isHttp404    = msg.includes('404');
-      const isHttp5xx    = /50[0-9]/.test(msg);
+      const isTimeout = msg.includes('timeout') || msg.includes('Timeout') || msg.includes('ETIMEDOUT');
+      const isNotFound = msg.includes('ERR_NAME_NOT_RESOLVED') || msg.includes('ENOTFOUND') || msg.includes('EAI_AGAIN');
+      const isRefused = msg.includes('ERR_CONNECTION_REFUSED') || msg.includes('ECONNREFUSED');
+      const isReset = msg.includes('ERR_CONNECTION_RESET') || msg.includes('ECONNRESET') || msg.includes('EHOSTUNREACH');
+      const isSsl = msg.includes('ERR_CERT_') || msg.includes('SSL') || msg.includes('certificate');
+      const isHttp404 = msg.includes('404') || msg.includes('ERR_HTTP_RESPONSE_CODE_FAILURE');
+      const isHttp5xx = /50[0-9]/.test(msg);
 
       if (isTimeout) {
         res.status(504).json({ error: 'timeout', message: 'The request timed out. The site may be slow or unresponsive.' });
@@ -64,7 +87,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       } else if (isHttp5xx) {
         res.status(502).json({ error: 'server_error', message: 'The target site returned a server error. Try again later.' });
       } else {
-        res.status(502).json({ error: 'fetch_failed', message: 'Could not fetch the page. Make sure the URL is publicly accessible.' });
+        res.status(502).json({ error: 'fetch_failed', message: `Scan failed: ${msg}` });
       }
     } else {
       res.status(500).json({ error: 'unexpected', message: 'An unexpected error occurred. Please try again.' });
