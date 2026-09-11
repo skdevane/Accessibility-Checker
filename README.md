@@ -228,5 +228,5 @@ Feel free to check the [issues page](https://github.com/skdevane/Accessibility-C
 Distributed under the **MIT License**. See `LICENSE` for more information.
 
 <div align="center">
-  <sub>Built with ❤️ by <a href="https://github.com/skdevane">SK Devane</a> for an accessible web for everyone.</sub>
+  <sub>Built by <a href="https://github.com/skdevane">SK Devane</a> for an accessible web for everyone.</sub>
 </div>
