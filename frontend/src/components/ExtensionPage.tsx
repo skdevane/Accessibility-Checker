@@ -5,7 +5,7 @@ interface ExtensionPageProps {
 }
 
 export const ExtensionPage: React.FC<ExtensionPageProps> = ({
-  githubRepoUrl = 'https://github.com/your-username/accessibility-checker',
+  githubRepoUrl = 'https://github.com/skdevane/Accessibility-Checker',
 }) => {
   const downloadUrl = `${githubRepoUrl}/releases/latest/download/accessibility-extension.zip`;
 
