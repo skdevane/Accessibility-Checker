@@ -4,6 +4,7 @@ import { ScoreCard } from './components/ScoreCard';
 import { IssueGroup } from './components/IssueGroup';
 import { ViolationGroup } from './components/ViolationGroup';
 import { ScanProgress } from './components/ScanProgress';
+import { ExtensionPage } from './components/ExtensionPage';
 import type { ScanResult, Category } from './types';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
@@ -70,6 +71,7 @@ function ErrorCard({ error }: { error: AppError }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function App() {
+  const [activeTab, setActiveTab] = useState<'scanner' | 'extension'>('scanner');
   const [result, setResult] = useState<ScanResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<AppError | null>(null);
@@ -171,56 +173,99 @@ export default function App() {
         </header>
 
 
-        {/* ── Scan Form Card ── (role="main" + id for skip link target: WCAG 1.3.6 + 2.4.1) */}
-        <main id="main-content" role="main">
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-purple-200 card-shadow p-6 mb-6">
-            <ScanForm onScan={handleScan} loading={loading} />
+        {/* ── Accessible Navigation Tab Bar (WCAG 2.4.4 / 4.1.2) ── */}
+        <nav aria-label="Main Navigation" className="mb-8">
+          <div role="tablist" aria-label="Auditor tool options" className="flex gap-3 bg-purple-100/70 p-1.5 rounded-2xl border-2 border-purple-200">
+            <button
+              role="tab"
+              id="tab-scanner"
+              aria-selected={activeTab === 'scanner'}
+              aria-controls="panel-scanner"
+              onClick={() => setActiveTab('scanner')}
+              className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-sm transition-all focus:outline-none focus:ring-2 focus:ring-purple-600 ${
+                activeTab === 'scanner'
+                  ? 'bg-white text-purple-900 card-shadow-sm border-2 border-purple-300'
+                  : 'text-purple-600 hover:text-purple-900 hover:bg-white/50'
+              }`}
+            >
+              🌐 Web Auditor
+            </button>
+
+            <button
+              role="tab"
+              id="tab-extension"
+              aria-selected={activeTab === 'extension'}
+              aria-controls="panel-extension"
+              onClick={() => setActiveTab('extension')}
+              className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-sm transition-all focus:outline-none focus:ring-2 focus:ring-purple-600 ${
+                activeTab === 'extension'
+                  ? 'bg-white text-purple-900 card-shadow-sm border-2 border-purple-300'
+                  : 'text-purple-600 hover:text-purple-900 hover:bg-white/50'
+              }`}
+            >
+              🧩 Chrome Extension
+            </button>
           </div>
+        </nav>
 
-          {/* ── Multi-Stage Scanning Progress ── */}
-          {loading && <ScanProgress />}
+        {/* ── Main Content Container (role="main" + id for skip link target: WCAG 1.3.6 + 2.4.1) */}
+        <main id="main-content" role="main">
+          {activeTab === 'scanner' ? (
+            <div id="panel-scanner" role="tabpanel" aria-labelledby="tab-scanner" className="space-y-6">
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-purple-200 card-shadow p-6">
+                <ScanForm onScan={handleScan} loading={loading} />
+              </div>
 
-          {/* ── Error ── */}
-          {error && <ErrorCard error={error} />}
+              {/* ── Multi-Stage Scanning Progress ── */}
+              {loading && <ScanProgress />}
 
-          {/* ── Results ── */}
-          {result && (
-            <div className="space-y-4 animate-fade-in" aria-live="polite" aria-label="Scan results">
-              <ScoreCard
-                score={result.score}
-                url={result.url}
-                summary={result.summary}
-                issueCount={result.issueCount}
-                scannedAt={result.scannedAt}
-              />
+              {/* ── Error ── */}
+              {error && <ErrorCard error={error} />}
 
-              {totalViolations === 0 ? (
-                <div className="bg-white rounded-2xl border-2 border-emerald-300 card-shadow text-center py-12 px-6">
-                  <div className="text-5xl mb-3">🎉</div>
-                  <p className="font-hand text-2xl text-emerald-600 font-bold">All clear!</p>
-                  <p className="text-purple-500 text-sm mt-1">
-                    {result.summary
-                      ? `Passed ${result.summary.passed} WCAG rules with 0 violations!`
-                      : 'This page passes all checked accessibility rules.'}
-                  </p>
-                </div>
-              ) : result.violations ? (
-                <div className="bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-purple-200 card-shadow p-6">
-                  <h3 className="font-hand text-xl text-purple-700 font-bold mb-4">
-                    ~ Accessibility Violations ({result.violations.length}) ~
-                  </h3>
-                  <ViolationGroup violations={result.violations} />
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <p className="font-hand text-lg text-purple-500 ml-1">
-                    ~ Issues by category ~
-                  </p>
-                  {CATEGORY_ORDER.filter((cat) => groupedV1[cat]).map((cat) => (
-                    <IssueGroup key={cat} category={cat} issues={groupedV1[cat]!} />
-                  ))}
+              {/* ── Results ── */}
+              {result && (
+                <div className="space-y-4 animate-fade-in" aria-live="polite" aria-label="Scan results">
+                  <ScoreCard
+                    score={result.score}
+                    url={result.url}
+                    summary={result.summary}
+                    issueCount={result.issueCount}
+                    scannedAt={result.scannedAt}
+                  />
+
+                  {totalViolations === 0 ? (
+                    <div className="bg-white rounded-2xl border-2 border-emerald-300 card-shadow text-center py-12 px-6">
+                      <div className="text-5xl mb-3">🎉</div>
+                      <p className="font-hand text-2xl text-emerald-600 font-bold">All clear!</p>
+                      <p className="text-purple-500 text-sm mt-1">
+                        {result.summary
+                          ? `Passed ${result.summary.passed} WCAG rules with 0 violations!`
+                          : 'This page passes all checked accessibility rules.'}
+                      </p>
+                    </div>
+                  ) : result.violations ? (
+                    <div className="bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-purple-200 card-shadow p-6">
+                      <h3 className="font-hand text-xl text-purple-700 font-bold mb-4">
+                        ~ Accessibility Violations ({result.violations.length}) ~
+                      </h3>
+                      <ViolationGroup violations={result.violations} />
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <p className="font-hand text-lg text-purple-500 ml-1">
+                        ~ Issues by category ~
+                      </p>
+                      {CATEGORY_ORDER.filter((cat) => groupedV1[cat]).map((cat) => (
+                        <IssueGroup key={cat} category={cat} issues={groupedV1[cat]!} />
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
+            </div>
+          ) : (
+            <div id="panel-extension" role="tabpanel" aria-labelledby="tab-extension">
+              <ExtensionPage />
             </div>
           )}
         </main>

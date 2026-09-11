@@ -1,0 +1,54 @@
+name: Build, Release Extension & Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-release-extension:
+    name: Package Chrome Extension
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/checkout@v4
+        with:
+          node-version: 20
+
+      - name: Install & Build Extension
+        run: |
+          cd extension
+          npm ci || npm install
+          npm run build
+
+      - name: Create Extension ZIP Archive
+        run: |
+          cd extension/dist
+          zip -r ../../accessibility-extension.zip .
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v1.0.0
+          name: Accessibility Auditor Chrome Extension v1.0.0
+          body: |
+            ## 🧩 Chrome Extension Automated Release Build
+            - Real-time page auditing using `axe-core`
+            - Element visual overlays & WCAG 2.1 compliance badges
+            - 100% local execution & privacy guaranteed
+
+            ### 📖 How to Install:
+            1. Download `accessibility-extension.zip` below.
+            2. Extract the ZIP file to a local folder.
+            3. Open `chrome://extensions` in Chrome/Brave/Edge.
+            4. Enable **Developer Mode** (top right toggle).
+            5. Click **Load unpacked** and select the extracted folder.
+          files: accessibility-extension.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
