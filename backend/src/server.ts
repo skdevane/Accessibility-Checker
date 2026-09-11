@@ -5,10 +5,16 @@ import scanRouter from './routes/scan';
 process.env.PLAYWRIGHT_BROWSERS_PATH = '0';
 
 const app = express();
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3002;
 const CORS_ORIGIN = process.env.CORS_ORIGIN ?? '*';
 
-app.use(cors({ origin: CORS_ORIGIN }));
+app.use(
+  cors({
+    origin: CORS_ORIGIN,
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 app.use(express.json());
 
 app.use('/api/scan', scanRouter);

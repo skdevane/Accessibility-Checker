@@ -7,7 +7,7 @@ import { ScanProgress } from './components/ScanProgress';
 import { ExtensionPage } from './components/ExtensionPage';
 import type { ScanResult, Category } from './types';
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
+const API_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:3002').replace(/\/$/, '');
 
 const CATEGORY_ORDER: Category[] = [
   'images-media',
