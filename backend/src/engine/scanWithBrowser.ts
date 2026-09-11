@@ -8,6 +8,9 @@ export interface ScanWithBrowserResult {
 }
 
 export async function scanWithBrowser(url: string): Promise<ScanWithBrowserResult> {
+  if (!process.env.PLAYWRIGHT_BROWSERS_PATH) {
+    process.env.PLAYWRIGHT_BROWSERS_PATH = '0';
+  }
   const browser = await chromium.launch({ headless: true });
   try {
     const context = await browser.newContext({
