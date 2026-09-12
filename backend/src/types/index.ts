@@ -52,7 +52,7 @@ export interface ScanResult {
   scannedAt: string;      // ISO timestamp
   summary: ScanSummary;
   violations: Violation[];
-  // V1 compat — optional
+  // V1 compat - optional
   issues?: Issue[];
   issueCount?: number;
 }

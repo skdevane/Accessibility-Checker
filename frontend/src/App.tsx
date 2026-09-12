@@ -38,15 +38,15 @@ type ErrorCode =
 interface AppError { code: ErrorCode; message: string; }
 
 const ERROR_META: Record<ErrorCode, { icon: string; title: string; hint: string }> = {
-  timeout:      { icon: '⏱️', title: 'Request Timed Out',        hint: 'The site took too long to respond. Try again or check if it\'s online.' },
-  not_found:    { icon: '🔍', title: 'Page Not Found',           hint: 'Double-check the URL for typos and make sure the page exists.' },
-  refused:      { icon: '🚫', title: 'Connection Refused',       hint: 'The server rejected the connection. It may be localhost or behind a firewall.' },
-  unreachable:  { icon: '📡', title: 'Server Unreachable',       hint: 'The site appears to be offline or is blocking automated requests.' },
-  ssl:          { icon: '🔒', title: 'SSL Certificate Error',    hint: 'The site has an invalid or expired HTTPS certificate.' },
-  server_error: { icon: '💥', title: 'Site Returned an Error',   hint: 'The target server responded with an error (5xx). Try again later.' },
-  fetch_failed: { icon: '🌐', title: 'Could Not Fetch Page',     hint: 'Make sure the URL is publicly accessible and not behind a login.' },
-  unexpected:   { icon: '⚠️', title: 'Unexpected Error',         hint: 'Something went wrong on our end. Please try again.' },
-  network:      { icon: '🔌', title: 'Cannot Reach Scanner',     hint: 'The scanner backend is not running. Start it with `npm run dev` in /backend.' },
+  timeout: { icon: '⏱️', title: 'Request Timed Out', hint: 'The site took too long to respond. Try again or check if it\'s online.' },
+  not_found: { icon: '🔍', title: 'Page Not Found', hint: 'Double-check the URL for typos and make sure the page exists.' },
+  refused: { icon: '🚫', title: 'Connection Refused', hint: 'The server rejected the connection. It may be localhost or behind a firewall.' },
+  unreachable: { icon: '📡', title: 'Server Unreachable', hint: 'The site appears to be offline or is blocking automated requests.' },
+  ssl: { icon: '🔒', title: 'SSL Certificate Error', hint: 'The site has an invalid or expired HTTPS certificate.' },
+  server_error: { icon: '💥', title: 'Site Returned an Error', hint: 'The target server responded with an error (5xx). Try again later.' },
+  fetch_failed: { icon: '🌐', title: 'Could Not Fetch Page', hint: 'Make sure the URL is publicly accessible and not behind a login.' },
+  unexpected: { icon: '⚠️', title: 'Unexpected Error', hint: 'Something went wrong on our end. Please try again.' },
+  network: { icon: '🔌', title: 'Cannot Reach Scanner', hint: 'The scanner backend is not running. Start it with `npm run dev` in /backend.' },
 };
 
 function ErrorCard({ error }: { error: AppError }) {
@@ -109,13 +109,13 @@ export default function App() {
   // V1 grouping compatibility
   const groupedV1 = result?.issues
     ? CATEGORY_ORDER.reduce<Partial<Record<Category, NonNullable<typeof result.issues>>>>(
-        (acc, cat) => {
-          const items = result.issues!.filter((i) => i.category === cat);
-          if (items.length > 0) acc[cat] = items;
-          return acc;
-        },
-        {},
-      )
+      (acc, cat) => {
+        const items = result.issues!.filter((i) => i.category === cat);
+        if (items.length > 0) acc[cat] = items;
+        return acc;
+      },
+      {},
+    )
     : {};
 
   const totalViolations = result?.violations
@@ -137,14 +137,14 @@ export default function App() {
         {/* ── Hero Header ── */}
         <header className="mb-10">
           <div className="flex items-center gap-6">
-            {/* Laptop doodle — left */}
+            {/* Laptop doodle - left */}
             <div className="shrink-0">
               <LaptopIllustration />
             </div>
 
-            {/* Title + subtitle + badges — right */}
+            {/* Title + subtitle + badges - right */}
             <div>
-              {/* Title — h1 for WCAG 1.3.1 */}
+              {/* Title - h1 for WCAG 1.3.1 */}
               <h1
                 className="inline-block bg-teal-400 text-white font-hand text-xl font-bold px-5 py-1.5 rounded-xl mb-3 rotate-[-1deg]"
                 style={{ boxShadow: '3px 3px 0 #0d9488' }}
@@ -182,11 +182,10 @@ export default function App() {
               aria-selected={activeTab === 'scanner'}
               aria-controls="panel-scanner"
               onClick={() => setActiveTab('scanner')}
-              className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-sm transition-all focus:outline-none focus:ring-2 focus:ring-purple-600 ${
-                activeTab === 'scanner'
+              className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-sm transition-all focus:outline-none focus:ring-2 focus:ring-purple-600 ${activeTab === 'scanner'
                   ? 'bg-white text-purple-900 card-shadow-sm border-2 border-purple-300'
                   : 'text-purple-600 hover:text-purple-900 hover:bg-white/50'
-              }`}
+                }`}
             >
               🌐 Web Auditor
             </button>
@@ -197,11 +196,10 @@ export default function App() {
               aria-selected={activeTab === 'extension'}
               aria-controls="panel-extension"
               onClick={() => setActiveTab('extension')}
-              className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-sm transition-all focus:outline-none focus:ring-2 focus:ring-purple-600 ${
-                activeTab === 'extension'
+              className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-sm transition-all focus:outline-none focus:ring-2 focus:ring-purple-600 ${activeTab === 'extension'
                   ? 'bg-white text-purple-900 card-shadow-sm border-2 border-purple-300'
                   : 'text-purple-600 hover:text-purple-900 hover:bg-white/50'
-              }`}
+                }`}
             >
               🧩 Chrome Extension
             </button>
